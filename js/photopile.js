@@ -163,7 +163,7 @@ var photopile = (function() {
             });
 
             this.container.append( this.image );
-            this.image.css('display', 'block').fadeIn('fast');
+            this.image.css('display', 'block').fadeIn(s.fadeDuration);
             this.container = $('div#photopile-active-image-container');
             this.image = this.container.children();
             
@@ -188,7 +188,9 @@ var photopile = (function() {
                 thumb.clearActiveClass();
                 thumb.setActive( thumbnail );
                 self.loadImage( thumb.getActiveImgSrc(), function() {
-                    self.enlarge(); // enlarge container when load is complete
+                    // fade in image and enlarge container when load is complete
+                    self.image.fadeTo(s.fadeDuration, '1');
+                    self.enlarge();
                     $('body').bind('click', function() { // bind event to close container
                         self.putDown();
                     });
@@ -219,7 +221,8 @@ var photopile = (function() {
         // Handles the loading of an image when a thumbnail is clicked.
         loadImage : function ( src, callback ) {
             var self = this;
-            self.removeImageSource();
+            // don't display image until next is loaded and ready
+            this.image.css('opacity', '0');
             self.startPosition();
             var img = new Image;
             img.src = src;
@@ -302,9 +305,6 @@ var photopile = (function() {
                 'padding' : s.photo.border + 'px'
             });
         },
-
-        // Remove img src so that the container's background loading image is displayed.
-        removeImageSource : function() { this.image.attr('src', ''); },
 
         // Sets the photo containers img src.
         setImageSource : function( src ) { 
