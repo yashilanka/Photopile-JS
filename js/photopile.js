@@ -1,85 +1,93 @@
 //
-//  File:  photopile.js
-//  Auth:  Brian W. Howell
-//  Date:  12 April 2014
-//
-
-// ISSUES:
-// When image source is set to '', broken image is displayed.
-// Add width and height elements to thumbnails
-
+// File: photopile.js
+// Auth: Brian W. Howell
+// Date: 25 April 2014
 //
 // Photopile image gallery
 //
 var photopile = (function() {
 
-    //-------------------------------------------------------------------------
-    //  PHOTOPILE CUSTOMIZATIONS
-    //  Perform basic customizations to the photo pile gallery settings here
-    //-------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------------------
+    //  PHOTOPILE SETTINGS
+    //---------------------------------------------------------------------------------------------
 
-    var s = {
-        thumbs : {            // Thumbnails
-            overlap   :  50,  // overlap amount (px)
-            rotation  :  45,  // maximum rotation (deg)
-            zindex    :  5,   // max number of layers in the pile
-            border    :  2    // thumbnail image padding (px)
-        },
-        photo : {              // Photo Container
-            zindex    :  100,  // z-index (show above all)
-            border    :  10    // border width around image
-        },                     // Other
-        fadeDuration  :  300,  // thumbnail fade duration (ms)
-        viewDuration  :  700   // pickup, putDown duration (ms)
-    }
+    // Thumbnails
+    var thumbOverlap      = 50;         // overlap amount (px)
+    var thumbRotation     = 45;         // maximum rotation (deg)
+    var thumbBorderWidth  = 2;          // border width (px)
+    var thumbBorderColor  = 'white';    // border color
+    var thumbBorderHover  = '#6DB8FF';  // border hover color
+    var numLayers         = 5;          // number of layers in the pile (max zindex)
 
-    // ----- END CUSTOMIZATIONS -----
+    // Photo container
+    var photoZIndex       = 100;        // z-index (show above all)
+    var photoBorder       = 10;         // border width around fullsize image
+    var photoBorderColor  = 'white';    // border color
+    var fadeDuration      = 200;        // speed at which photo fades (ms)
+    var pickupDuration    = 500;        // speed at which photo is picked up & put down (ms)
 
-    var el     = $('ul.photopile');  // gallery ul element
-    var thumbs = el.children();      // gallery ul li elements
+    // Loading images
+    var thumbLoading   = 'images/thumb-loading.gif';  // path to image displayed while thumbnail loads
 
-    // Initializes photopile gallery thumbnails, photo container, and removes .js styles.
+    // Minimum height of the photopile's container div.
+    // Saves space for the photopile onload to prevent other content from shuffling around
+    var galleryHeight  = 500;
+
+    //---- END SETTINGS ----
+
+    // Initializes Photopile
     function init() {
 
         // init thumbnails
-        thumbs.each( function() {
-            $(this).children().css( 'padding', s.thumbs.border + 'px' );
+        $('ul.photopile').children().each( function() {
+            $(this).children().css( 'padding', thumbBorderWidth + 'px' );
             thumb.bindUIActions($(this));
             thumb.setRotation($(this));
             thumb.setOverlap($(this));
             thumb.setZ($(this));
+            $(this).css('background', thumbBorderColor );
         });
 
         photo.init(); // init photo container
-        
-        // undo .js styles and pad the photopile-wrapper
+
+        // apply default styles to the photopile container div & display thumbs
         $('.js div.photopile-wrapper').css({
-            'background-image' : 'none',
-            'padding' : s.thumbs.overlap + 'px'
-        });
-        $('.js ul.photopile').css('display', 'inline-block');
+            'min-height' : galleryHeight,
+            'padding'    : thumbOverlap + 'px'
+        }).children().css('display', 'inline-block'); // undo .js hide
     
     } // init
 
-    //
     // Photopile thumbnails
     //
     var thumb = {
 
-        active : 'photopile-active-thumbnail',  // active(clicked) thumbnail class name
+        active : 'photopile-active-thumbnail',  // active (or clicked) thumbnail class name
 
         // Binds UI actions to thumbnail.
         bindUIActions : function( thumb ) {
             var self = this;
-            
-            // Mouseover & Mouseout | Change thumbnail z-index
-            thumb.mouseover( function() { $(this).css( 'z-index', s.thumbs.zindex ); }); // top
-            thumb.mouseout( function() { $(this).css( 'z-index', s.thumbs.zindex - 1 ); }); // -1
+       
+            // Mouseover | Move to top of pile and change border color.
+            thumb.mouseover( function() { 
+                $(this).css({
+                    'z-index'    : numLayers + 1,
+                    'background' : thumbBorderHover 
+                });
+            });
 
-            // On click | open image in the photo container
+            // Mouseout | Move down one layer and return to default border color.
+            thumb.mouseout( function() { 
+                $(this).css({
+                    'z-index'    : numLayers,
+                    'background' : thumbBorderColor
+                });
+            });
+
+            // On click | Open image in the photo container.
             thumb.click( function(e) {
                 e.preventDefault();
-                if ( $(this).hasClass(self.active) ) return;
+                if ($(this).hasClass(self.active)) return;
                 photo.pickup( $(this) );
             });
 
@@ -87,26 +95,26 @@ var photopile = (function() {
 
         // Sets thumbnail overlap amount.
         setOverlap : function( thumb ) {
-            thumb.css( 'margin', ((s.thumbs.overlap * -1) / 2) + 'px' );
+            thumb.css( 'margin', ((thumbOverlap * -1) / 2) + 'px' );
         },
 
         // Sets thumbnail z-index to random layer.
         setZ : function( thumb ) {
-            thumb.css({ 'z-index' : Math.floor((Math.random() * s.thumbs.zindex) + 1) });
+            thumb.css({ 'z-index' : Math.floor((Math.random() * numLayers) + 1) });
         },
 
         // Sets thumbnail rotation randomly.
         setRotation : function( thumb ) {
-            var min = -1 * s.thumbs.rotation;
-            var max = s.thumbs.rotation;
-            var r = Math.floor( Math.random() * (max - min + 1)) + min;
-            thumb.css({ 'transform' : 'rotate(' + r + 'deg)' });
+            var min = -1 * thumbRotation;
+            var max = thumbRotation;
+            var randomRotation = Math.floor( Math.random() * (max - min + 1)) + min;
+            thumb.css({ 'transform' : 'rotate(' + randomRotation + 'deg)' });
         },
 
-        // ----- ACTIVE THUMBNAIL -----
+        // ----- Active thumbnail -----
 
         // Get & set the active thumbnail.
-        getActive : function() { return  $('li.' + this.active).first(); },
+        getActive : function() { return $('li.' + this.active).first(); },
         setActive : function( thumb ) { thumb.addClass(this.active); },
 
         // Return active thumbnail properties
@@ -121,8 +129,8 @@ var photopile = (function() {
                 return angle;
         },
 
-        // Returns a shift amount used to better position the photo container on top of the 
-        // active thumb since it's offset is skewed by it's rotation.
+        // Returns a shift amount used to better position the photo container 
+        // on top of the active thumb. Needed because offset is skewed by thumbnail's rotation.
         getActiveShift : function() {
             return ( this.getActiveRotation() < 0 )
                 ? -( this.getActiveRotation(thumb) * 0.40 )
@@ -130,73 +138,62 @@ var photopile = (function() {
         },
 
         // Removes the active class from all thumbnails.
-        clearActiveClass : function() { $('li.' + this.active).fadeTo(s.fadeDuration, 1).removeClass(this.active); }
+        clearActiveClass : function() { $('li.' + this.active).fadeTo(fadeDuration, 1).removeClass(this.active); }
 
     } // thumbnail
  
-    //
     // Photopile photo container (for fullsize image)
     //
     var photo = {
 
-        // Define photo container elements
+        // Photo container elements
         container : $( '<div id="photopile-active-image-container"/>' ), 
         image     : $( '<img id="photopile-active-image" />'),
 
         isPickedUp     : false,  // track if photo container is currently viewable
         fullSizeWidth  : null,   // will hold width of active thumbnail's fullsize image
         fullSizeHeight : null,   // will hold height of active thumbnail's fullsize image
-        loadingWidth   : null,   // will hold width of loading image
-        loadingHeight  : null,   // will hold height of loading image
         windowPadding  : 20,     // minimum space between container and edge of window (px)
         
         // Initializes the photo container.
-        // Adds elements to DOM, saves container selectors, and preloads the loading image.
+        // Adds elements to DOM and saves container selectors.
         init : function() {
 
             $('body').append( this.container );
             this.container.css({
-                'display'  : 'none',
-                'position' : 'absolute',
-                'padding'  : s.thumbs.padding,
-                'z-index'  : s.photo.zindex
+                'display'    : 'none',
+                'position'   : 'absolute',
+                'padding'    : thumbBorderWidth,
+                'z-index'    : photoZIndex,
+                'background' : photoBorderColor,
+                'background-image'    : 'url(' + thumbLoading + ')',
+                'background-repeat'   : 'no-repeat',
+                'background-position' : '50%, 50%'
             });
 
             this.container.append( this.image );
-            this.image.css('display', 'block').fadeIn(s.fadeDuration);
+            this.image.css('display', 'block');
             this.container = $('div#photopile-active-image-container');
             this.image = this.container.children();
-            
-            var self = this;
-            var loading = new Image;
-            loading.src = s.photo.loading;
-            loading.onload = function() {
-                self.loadingWidth = this.width;
-                self.loadingHeight = this.height;
-            };
         
         }, // init
 
         // Simulates picking up a photo from the photopile.
         pickup : function( thumbnail ) {
             var self = this;
-
             if ( self.isPickedUp ) {
-                self.putDown( function() { self.pickup( thumbnail ); }); // put down, then pickup
+                // photo already picked up. put it down and then pickup the clicked thumbnail
+                self.putDown( function() { self.pickup( thumbnail ); });
             } else {
                 self.isPickedUp = true;
                 thumb.clearActiveClass();
                 thumb.setActive( thumbnail );
                 self.loadImage( thumb.getActiveImgSrc(), function() {
-                    // fade in image and enlarge container when load is complete
-                    self.image.fadeTo(s.fadeDuration, '1');
+                    self.image.fadeTo(fadeDuration, '1');
                     self.enlarge();
-                    $('body').bind('click', function() { // bind event to close container
-                        self.putDown();
-                    });
+                    $('body').bind('click', function() { self.putDown(); });
                 });
             }
-
         }, // pickup
 
         // Simulates putting a photo down, or returning to the photo pile.
@@ -208,11 +205,11 @@ var photopile = (function() {
                 'left'    : thumb.getActiveOffset().left + thumb.getActiveShift(),
                 'width'   : thumb.getActiveWidth() + 'px',
                 'height'  : thumb.getActiveHeight() + 'px',
-                'padding' : s.thumbs.border + 'px'
-            }, s.viewDuration, function() {
+                'padding' : thumbBorderWidth + 'px'
+            }, pickupDuration, function() {
                 self.isPickedUp = false;
                 thumb.clearActiveClass();
-                self.container.fadeOut( s.fadeDuration, function() {
+                self.container.fadeOut( fadeDuration, function() {
                     if (callback) callback();
                 });
             });
@@ -221,12 +218,11 @@ var photopile = (function() {
         // Handles the loading of an image when a thumbnail is clicked.
         loadImage : function ( src, callback ) {
             var self = this;
-            // don't display image until next is loaded and ready
-            this.image.css('opacity', '0');
-            self.startPosition();
-            var img = new Image;
-            img.src = src;
-            img.onload = function() {
+            self.image.css('opacity', '0');         // Image is not visible until
+            self.startPosition();                   // the container is positioned,
+            var img = new Image;                    // the source is updated,
+            img.src = src;                          // and the image is loaded.
+            img.onload = function() {               // Restore visibility in callback
                 self.fullSizeWidth = this.width;
                 self.fullSizeHeight = this.height;
                 self.setImageSource( src );
@@ -242,21 +238,19 @@ var photopile = (function() {
                 'transform' : 'rotate(' + thumb.getActiveRotation() + 'deg)',
                 'width'     : thumb.getActiveWidth() + 'px',
                 'height'    : thumb.getActiveHeight() + 'px',
-                'padding'   : s.thumbs.border
-            }).fadeTo(s.fadeDuration, '1');
-            thumb.getActive().fadeTo(s.fadeDuration, '0');
+                'padding'   : thumbBorderWidth
+            }).fadeTo(fadeDuration, '1');
+            thumb.getActive().fadeTo(fadeDuration, '0');
         },
 
         // Enlarges the photo container based on window and image size (loadImage callback).
         enlarge : function() {
-
             var windowHeight = window.innerHeight ? window.innerHeight : $(window).height(); // mobile safari hack
             var availableWidth = $(window).width() - (2 * this.windowPadding);
             var availableHeight = windowHeight - (2 * this.windowPadding);
-            
             if ((availableWidth < this.fullSizeWidth) && ( availableHeight < this.fullSizeHeight )) {
                 // determine which dimension will allow image to fit completely within the window
-                if ( (availableWidth * (this.fullSizeHeight / this.fullSizeWidth)) > availableHeight ) {
+                if ((availableWidth * (this.fullSizeHeight / this.fullSizeWidth)) > availableHeight) {
                     this.enlargeToWindowHeight( availableHeight );
                 } else {
                     this.enlargeToWindowWidth( availableWidth );
@@ -268,7 +262,6 @@ var photopile = (function() {
             } else {
                 this.enlargeToFullSize();
             }
-        
         }, // enlarge
 
         // Fullsize image will fit in window.
@@ -276,9 +269,9 @@ var photopile = (function() {
             this.container.css('transform', 'rotate(0deg)').animate({
                 'top'     : ($(window).scrollTop()) + ($(window).height() / 2) - (this.fullSizeHeight / 2),
                 'left'    : ($(window).scrollLeft()) + ($(window).width() / 2) - (this.fullSizeWidth / 2),
-                'width'   : (this.fullSizeWidth - (2 * s.photo.border)) + 'px',
-                'height'  : (this.fullSizeHeight - (2 * s.photo.border)) + 'px',
-                'padding' : s.photo.border + 'px',
+                'width'   : (this.fullSizeWidth - (2 * photoBorder)) + 'px',
+                'height'  : (this.fullSizeHeight - (2 * photoBorder)) + 'px',
+                'padding' : photoBorder + 'px',
             });
         },
 
@@ -290,11 +283,11 @@ var photopile = (function() {
                 'left'    : $(window).scrollLeft() + ($(window).width() / 2)  - (availableWidth / 2),
                 'width'   : availableWidth + 'px',
                 'height'  : adjustedHeight + 'px',
-                'padding' : s.photo.border + 'px'
+                'padding' : photoBorder + 'px'
             });
         },
 
-        // Fullsize image height exceeds window width.
+        // Fullsize image height exceeds window height.
         enlargeToWindowHeight : function( availableHeight ) {
             var adjustedWidth = availableHeight * (this.fullSizeWidth / this.fullSizeHeight);
             this.container.css('transform', 'rotate(0deg)').animate({
@@ -302,11 +295,11 @@ var photopile = (function() {
                 'left'    : $(window).scrollLeft() + ($(window).width() / 2)  - (adjustedWidth / 2),
                 'width'   : adjustedWidth + 'px',
                 'height'  : availableHeight + 'px',
-                'padding' : s.photo.border + 'px'
+                'padding' : photoBorder + 'px'
             });
         },
 
-        // Sets the photo containers img src.
+        // Sets the photo container's image source.
         setImageSource : function( src ) { 
             this.image.attr('src', src).css({
                 'width'      : '100%',
@@ -317,16 +310,8 @@ var photopile = (function() {
 
     }; // photo
 
-    //--------------------
-    //  Photopile API
-    //--------------------
-
-    return { scatter : init }
+    return { scatter : init } // Return 1 method Photopile API
 
 })(); // photopile
 
-
-// !!! Initialize the photopile !!!
-photopile.scatter();
-
-
+photopile.scatter();  // ### initialize the photopile ###

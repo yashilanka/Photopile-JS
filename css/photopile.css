@@ -1,31 +1,32 @@
 /*
  *  Photopile image gallery base styles
- *  Author: Brian W. Howell
- *  Date: 23 April 2014
+ *  
+ *  Auth: Brian W. Howell
+ *  Date: 25 April 2014
  *
  */
 
-/*--------------------------------------------------------
- *  .js - prevent FOUC and display gallery loading image
- *--------------------------------------------------------*/
+/*-----------------------------------------------------------------------------
+ *  THUMBNAIL SCALING
+ *  As window size gets smaller, reduce the maximum thumbnail width.
+ *  By doing so we can maintain the photopile effect for all screen resolutions.
+ *  It is highly likely that you'll want to customize these values based on
+ *  your personal preferences and the size of your thumbnails.
+ *----------------------------------------------------------------------------*/
 
-.js div.photopile-wrapper {
+@media (max-width: 320px)                         { ul.photopile li a { max-width:  85px; }}
+@media (min-width: 321px) and (max-width: 568px)  { ul.photopile li a { max-width: 100px; }}
+@media (min-width: 569px) and (max-width: 768px)  { ul.photopile li a { max-width: 115px; }}
+@media (min-width: 769px) and (max-width: 1024px) { ul.photopile li a { max-width: 125px; }}
 
-    /* CUSTOMIZE: Gallery placeholder during loading process. Adjust based on number of images in gallery */
-    min-height: 150px;
+/* ---- end thumbnail scaling ------------------------------------------------*/
 
-    /* CUSTOMIZE: Path to background image displayed while gallery is loading */
-    background-image: url('../images/loading-gallery.gif');
-
-    background-repeat: no-repeat;
-    background-position: 50%, 50%;
+/* Prevent FOUC */
+.js ul.photopile { 
+    display: none;
 }
-.js ul.photopile { display: none; }
 
-/*---------------
- *  Thumbnails
- *--------------*/
-
+/* Thumbnails */
 ul.photopile {
     position: relative;
     display: inline-block;
@@ -39,26 +40,21 @@ ul.photopile li {
     position: relative;
     margin: 2px;
     padding: 0;
+
 }
 ul.photopile li a {
     display: block;
     padding: 2px;
     outline: none;
     text-decoration: none;
-
-    /* CUSTOMIZE: Styles applied to thumbnails to give a photo-like appearance */
-    background: white;
     border: 1px solid #6F6F6F;
     box-shadow: 0 0 20px #9F9F9F;
-}
-ul.photopile li a:hover {
-
-    /* CUSTOMIZE: Thumbnail hover color & transition speed */
-    background: #6DB8FF;
-    transition: .5s;
+    -webkit-backface-visibility: hidden;
 }
 ul.photopile li.photopile-active-thumbnail:hover,
-ul.photopile li.photopile-active-thumbnail a:hover { cursor: initial; }
+ul.photopile li.photopile-active-thumbnail a:hover { 
+    cursor: default;
+}
 ul.photopile li a img {
     display: block;
     margin: 0;
@@ -66,42 +62,13 @@ ul.photopile li a img {
     border: 1px solid #6F6F6F;
     width: 100%;
     height: auto;
+    -webkit-backface-visibility: hidden;
 }
 
-/*--------------------------------------------------------------------------------------
- *  CUSTOMIZE:
- *  Thumbnail scaling | Reduces maximum width of thumbnails based on screen dimension.
- *  It is highly likely that you'll want to customize this or remove altogether based 
- *  on your thumbnails.
- *--------------------------------------------------------------------------------------*/
-
-@media (max-width: 320px) {
-    ul.photopile li a { max-width: 85px; }
-}
-@media (min-width: 321px) and (max-width: 568px) { 
-    ul.photopile li a { max-width: 100px; }
-}
-@media (min-width: 569px) and (max-width: 768px) { 
-    ul.photopile li a { max-width: 115px; }
-}
-@media (min-width: 769px) and (max-width: 1024px) { 
-    ul.photopile li a { max-width: 125px; }
-}
-
-/*-------------------*
- *  Photo container  *
- *-------------------*/
-
+/* Photo container */
 div#photopile-active-image-container {
-
-    /* CUSTOMIZE: Styles applied to photo container to give a photo-like appearance */
-    background: white;
     border: 1px solid #6F6F6F;
     box-shadow: 0 20px 80px black;
-    background-image: url('../images/thumb-loading.gif');
-
-    background-repeat: no-repeat;
-    background-position: 50%, 50%;
     -moz-box-sizing:border-box;
     -webkit-box-sizing:border-box; 
     box-sizing:border-box;
