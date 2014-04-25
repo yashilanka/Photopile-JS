@@ -57,6 +57,7 @@ var photopile = (function() {
         // Style and display the thumbnails after they have loaded.
         $(window).load(function() {
             $('.js div.photopile-wrapper').css('padding', thumbOverlap + 'px').children().css({
+                'background-image' : 'none',
                 'opacity' : '0',
                 'display' : 'inline-block'
             }).fadeTo(fadeDuration, 1)
