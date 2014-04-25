@@ -58,7 +58,7 @@ var photopile = (function() {
         $(window).load(function() {
             $('.js div.photopile-wrapper').css({
                 'padding' : thumbOverlap + 'px',
-                'background-image' : 'url()'
+                'background-image' : 'none'
             }).children().css({
                 'opacity' : '0',
                 'display' : 'inline-block'
