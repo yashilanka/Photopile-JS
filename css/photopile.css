@@ -50,7 +50,7 @@ ul.photopile li {
     position: relative;
     margin: 2px;
     padding: 0;
-
+    -webkit-backface-visibility: hidden;
 }
 ul.photopile li a {
     display: block;
@@ -59,7 +59,6 @@ ul.photopile li a {
     text-decoration: none;
     border: 1px solid #6F6F6F;
     box-shadow: 0 0 20px #9F9F9F;
-    -webkit-backface-visibility: hidden;
 }
 ul.photopile li.photopile-active-thumbnail:hover,
 ul.photopile li.photopile-active-thumbnail a:hover { 
@@ -72,7 +71,6 @@ ul.photopile li a img {
     border: 1px solid #6F6F6F;
     width: 100%;
     height: auto;
-    -webkit-backface-visibility: hidden;
 }
 
 /* Photo container */
