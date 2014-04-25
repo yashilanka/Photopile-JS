@@ -2,8 +2,10 @@
 // File: photopile.js
 // Auth: Brian W. Howell
 // Date: 25 April 2014
+
 //
-// PHOTOPILE UL
+// PHOTOPILE
+// 
 //
 var photopile = (function() {
 
@@ -42,46 +44,44 @@ var photopile = (function() {
             'background-image'    : 'url(' + galleryLoading + ')'
         });
 
-        // #########################################################################################
-        // TODO
-        // #########################################################################################
-        // Move this to an init function in the thubm object ????????????????
-        // I want to add functionality that adds first and last class to first and last thumb
-        // #########################################################################################
-
-        // init thumbnails 
-        $('ul.photopile').children().each( function() {
-            $(this).children().css( 'padding', thumbBorderWidth + 'px' );
-            thumb.bindUIActions($(this));
-            thumb.setRotation($(this));
-            thumb.setOverlap($(this));
-            thumb.setZ($(this));
-            $(this).css('background', thumbBorderColor );
+        // initialize thumbnails and photo container
+        $('ul.photopile').children().each( function() { 
+            thumb.init($(this));
         });
+        photo.init();
 
-        photo.init(); // init photo container
-
-        // Once gallery has loaded:
-        // Style and display the thumbnails and initialize the navigator
+        // Once gallery has loaded completely
         $(window).load(function() {
-            $('.js div.photopile-wrapper').css({
+            $('.js div.photopile-wrapper').css({  // style container
                 'padding' : thumbOverlap + 'px',
                 'background-image' : 'none'
-            }).children().css({
+            }).children().css({  // display thumbnails
                 'opacity' : '0',
                 'display' : 'inline-block'
             }).fadeTo(fadeDuration, 1);
-            navigator.init();
+            navigator.init();  // init navigator
         });
     
     } // init
 
+    //-----------------------------------------------------------
     // THUMBNAILS
-    // List-items within the Photopile ul
-    //
+    // A thumbnail is list-item containing a link to an image.
+    //-----------------------------------------------------------
+
     var thumb = {
 
         active : 'photopile-active-thumbnail',  // active (or clicked) thumbnail class name
+
+        // Initializes thumbnail.
+        init : function( thumb ) {
+            thumb.children().css( 'padding', thumbBorderWidth + 'px' );
+            this.bindUIActions(thumb);
+            this.setRotation(thumb);
+            this.setOverlap(thumb);
+            this.setZ(thumb);
+            thumb.css('background', thumbBorderColor );
+        },
 
         // Binds UI actions to thumbnail.
         bindUIActions : function( thumb ) {
@@ -165,10 +165,12 @@ var photopile = (function() {
 
     } // thumbnail
  
+    //--------------------------------------------------------------------
     // PHOTO CONTAINER
-    // This is a dynamic div container wrapping an img element that displays the fullsize image
-    // associated with the active thumbnail.
-    //
+    // Dynamic container div wrapping an img element that displays the 
+    // fullsize image associated with the active thumbnail.
+    //--------------------------------------------------------------------
+
     var photo = {
 
         // Photo container elements
@@ -339,6 +341,12 @@ var photopile = (function() {
     // TODO
     // #########################################################################################
     // Working here
+    // #########################################################################################
+
+    // #########################################################################################
+    // TODO
+    // #########################################################################################
+    // I want to add functionality that adds first and last class to first and last thumb
     // #########################################################################################
 
     var navigator = {
