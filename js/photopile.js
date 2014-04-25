@@ -64,10 +64,10 @@ var photopile = (function() {
     
     } // init
 
-    //-----------------------------------------------------------
-    // THUMBNAILS
-    // A thumbnail is list-item containing a link to an image.
-    //-----------------------------------------------------------
+    //-----------------------------------------------------
+    // THUMBNAIL
+    // List-item containing a link to a a fullsize image
+    //-----------------------------------------------------
 
     var thumb = {
 
@@ -168,7 +168,7 @@ var photopile = (function() {
     //--------------------------------------------------------------------
     // PHOTO CONTAINER
     // Dynamic container div wrapping an img element that displays the 
-    // fullsize image associated with the active thumbnail.
+    // fullsize image associated with the active thumbnail
     //--------------------------------------------------------------------
 
     var photo = {
@@ -339,38 +339,47 @@ var photopile = (function() {
 
     // #########################################################################################
     // TODO
-    // #########################################################################################
-    // Working here
-    // #########################################################################################
-
-    // #########################################################################################
-    // TODO
-    // #########################################################################################
-    // I want to add functionality that adds first and last class to first and last thumb
+    // -----
+    // Working here ...
     // #########################################################################################
 
     var navigator = {
 
+        // Initializes the navigator.
         init : function() {
+
+            // Add 'first/last' class to respective element in the gallery
+            $('ul.photopile li:first').addClass('first');
+            $('ul.photopile li:last').addClass('last');
+
+            // Bind events to LR arrow clicks
             $(document.documentElement).keyup(function (e) {
                 if (e.keyCode == 39) { navigator.next(); } // right arrow clicks
                 if (e.keyCode == 37) { navigator.prev(); } // left arrow clicks
             });
-        },
 
+        }, // init
+
+        // Picks up the next photo in gallery.
         next : function() {
             var activeThumb = thumb.getActive();
-            if ( !activeThumb ) {
-                // pickup the first 
-                photo.pickup( $('ul.photopile').children().first() );
+            if ( !activeThumb ) return;
+            if ( activeThumb.hasClass('last')) {
+                photo.pickup( $('ul.photopile').children().first() );  // pickup first 
             } else {
-                // pickup the next thumbnail
-                photo.pickup( activeThumb.next('li') );
+                photo.pickup( activeThumb.next('li') ); // pickup next
             }
         },
 
+        // Picks up the previous photo in gallery.
         prev : function() {
-            alert('TODO: Add prev functionality');
+            var activeThumb = thumb.getActive();
+            if ( !activeThumb ) return;
+            if ( activeThumb.hasClass('first')) {
+                photo.pickup( $('ul.photopile').children().last() );  // pickup last 
+            } else {
+                photo.pickup( activeThumb.prev('li') ); // pickup prev
+            }
         }
 
     }; // navigator
