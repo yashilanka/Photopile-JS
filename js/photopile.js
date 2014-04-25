@@ -29,10 +29,6 @@ var photopile = (function() {
     // Loading images
     var thumbLoading   = 'images/thumb-loading.gif';  // path to image displayed while thumbnail loads
 
-    // Minimum height of the photopile's container div.
-    // Saves space for the photopile onload to prevent other content from shuffling around
-    var galleryHeight  = 500;
-
     //---- END SETTINGS ----
 
     // Initializes Photopile
@@ -50,11 +46,8 @@ var photopile = (function() {
 
         photo.init(); // init photo container
 
-        // apply default styles to the photopile container div & display thumbs
-        $('.js div.photopile-wrapper').css({
-            'min-height' : galleryHeight,
-            'padding'    : thumbOverlap + 'px'
-        }).children().css('display', 'inline-block'); // undo .js hide
+        // apply default styles to the photopile container div & display thumbs (undo .js hide)
+        $('.js div.photopile-wrapper').css('padding', thumbOverlap + 'px').children().css('display', 'inline-block');
     
     } // init
 
