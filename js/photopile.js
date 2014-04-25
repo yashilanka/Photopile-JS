@@ -3,7 +3,7 @@
 // Auth: Brian W. Howell
 // Date: 25 April 2014
 //
-// Photopile image gallery
+// PHOTOPILE UL
 //
 var photopile = (function() {
 
@@ -42,7 +42,14 @@ var photopile = (function() {
             'background-image'    : 'url(' + galleryLoading + ')'
         });
 
-        // init thumbnails
+        // #########################################################################################
+        // TODO
+        // #########################################################################################
+        // Move this to an init function in the thubm object ????????????????
+        // I want to add functionality that adds first and last class to first and last thumb
+        // #########################################################################################
+
+        // init thumbnails 
         $('ul.photopile').children().each( function() {
             $(this).children().css( 'padding', thumbBorderWidth + 'px' );
             thumb.bindUIActions($(this));
@@ -54,7 +61,8 @@ var photopile = (function() {
 
         photo.init(); // init photo container
 
-        // Style and display the thumbnails after they have loaded.
+        // Once gallery has loaded:
+        // Style and display the thumbnails and initialize the navigator
         $(window).load(function() {
             $('.js div.photopile-wrapper').css({
                 'padding' : thumbOverlap + 'px',
@@ -62,12 +70,14 @@ var photopile = (function() {
             }).children().css({
                 'opacity' : '0',
                 'display' : 'inline-block'
-            }).fadeTo(fadeDuration, 1)
+            }).fadeTo(fadeDuration, 1);
+            navigator.init();
         });
     
     } // init
 
-    // Photopile thumbnails
+    // THUMBNAILS
+    // List-items within the Photopile ul
     //
     var thumb = {
 
@@ -122,8 +132,12 @@ var photopile = (function() {
 
         // ----- Active thumbnail -----
 
-        // Get & set the active thumbnail.
-        getActive : function() { return $('li.' + this.active).first(); },
+        // Gets the active thumbnail if set, or returns false.
+        getActive : function() { 
+            return ($('li.' + this.active)[0]) ? $('li.' + this.active).first() : false;
+        },
+
+        // Sets the active thumbnail.
         setActive : function( thumb ) { thumb.addClass(this.active); },
 
         // Return active thumbnail properties
@@ -151,7 +165,9 @@ var photopile = (function() {
 
     } // thumbnail
  
-    // Photopile photo container (for fullsize image)
+    // PHOTO CONTAINER
+    // This is a dynamic div container wrapping an img element that displays the fullsize image
+    // associated with the active thumbnail.
     //
     var photo = {
 
@@ -317,9 +333,42 @@ var photopile = (function() {
             });
         }
 
-    }; // photo
+    } // photo
 
-    return { scatter : init } // Return 1 method Photopile API
+    // #########################################################################################
+    // TODO
+    // #########################################################################################
+    // Working here
+    // #########################################################################################
+
+    var navigator = {
+
+        init : function() {
+            $(document.documentElement).keyup(function (e) {
+                if (e.keyCode == 39) { navigator.next(); } // right arrow clicks
+                if (e.keyCode == 37) { navigator.prev(); } // left arrow clicks
+            });
+        },
+
+        next : function() {
+            var activeThumb = thumb.getActive();
+            if ( !activeThumb ) {
+                // pickup the first 
+                photo.pickup( $('ul.photopile').children().first() );
+            } else {
+                // pickup the next thumbnail
+                photo.pickup( activeThumb.next('li') );
+            }
+        },
+
+        prev : function() {
+            alert('TODO: Add prev functionality');
+        }
+
+    }; // navigator
+
+    // Return 1 method Photopile API
+    return { scatter : init }
 
 })(); // photopile
 
