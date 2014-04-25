@@ -340,10 +340,15 @@ var photopile = (function() {
     // #########################################################################################
     // TODO
     // -----
-    // Working here ...
+    // Working here
+    // Going to add left right arrows to the photo container for navigation
     // #########################################################################################
 
     var navigator = {
+
+        // Navigator elements
+        next : $( '<div id="photopile-nav-next" />' ), 
+        prev : $( '<div id="photopile-nav-prev" />' ),
 
         // Initializes the navigator.
         init : function() {
@@ -354,14 +359,14 @@ var photopile = (function() {
 
             // Bind events to LR arrow clicks
             $(document.documentElement).keyup(function (e) {
-                if (e.keyCode == 39) { navigator.next(); } // right arrow clicks
-                if (e.keyCode == 37) { navigator.prev(); } // left arrow clicks
+                if (e.keyCode == 39) { navigator.pickupNext(); } // right arrow clicks
+                if (e.keyCode == 37) { navigator.pickupPrev(); } // left arrow clicks
             });
 
         }, // init
 
         // Picks up the next photo in gallery.
-        next : function() {
+        pickupNext : function() {
             var activeThumb = thumb.getActive();
             if ( !activeThumb ) return;
             if ( activeThumb.hasClass('last')) {
@@ -372,7 +377,7 @@ var photopile = (function() {
         },
 
         // Picks up the previous photo in gallery.
-        prev : function() {
+        pickupPrev : function() {
             var activeThumb = thumb.getActive();
             if ( !activeThumb ) return;
             if ( activeThumb.hasClass('first')) {
