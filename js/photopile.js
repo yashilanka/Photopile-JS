@@ -27,12 +27,20 @@ var photopile = (function() {
     var pickupDuration    = 500;        // speed at which photo is picked up & put down (ms)
 
     // Loading images
-    var thumbLoading   = 'images/thumb-loading.gif';  // path to image displayed while thumbnail loads
+    var thumbLoading   = 'images/thumb-loading.gif';   // path to image displayed while thumbnail loads
+    var galleryLoading = 'images/gallery-loading.gif'; // path to image displayed while gallery loads
 
     //---- END SETTINGS ----
 
     // Initializes Photopile
     function init() {
+
+        // display gallery loading image on container div
+        $('.js div.photopile-wrapper').css({
+            'background-repeat'   : 'no-repeat',
+            'background-position' : '50%, 50%',
+            'background-image'    : 'url(' + galleryLoading + ')'
+        });
 
         // init thumbnails
         $('ul.photopile').children().each( function() {
@@ -46,8 +54,13 @@ var photopile = (function() {
 
         photo.init(); // init photo container
 
-        // apply default styles to the photopile container div & display thumbs (undo .js hide)
-        $('.js div.photopile-wrapper').css('padding', thumbOverlap + 'px').children().css('display', 'inline-block');
+        // Style and display the thumbnails after they have loaded.
+        $(window).load(function() {
+            $('.js div.photopile-wrapper').css('padding', thumbOverlap + 'px').children().css({
+                'opacity' : '0',
+                'display' : 'inline-block'
+            }).fadeTo(fadeDuration, 1)
+        });
     
     } // init
 
