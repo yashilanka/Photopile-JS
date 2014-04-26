@@ -28,9 +28,11 @@ var photopile = (function() {
     var fadeDuration      = 200;        // speed at which photo fades (ms)
     var pickupDuration    = 500;        // speed at which photo is picked up & put down (ms)
 
-    // Loading images
-    var thumbLoading   = 'images/thumb-loading.gif';   // path to image displayed while thumbnail loads
-    var galleryLoading = 'images/gallery-loading.gif'; // path to image displayed while gallery loads
+    // Background images
+    var thumbLoading   = 'images/thumb-loading.gif';    // path to image displayed while thumbnail loads
+    var galleryLoading = 'images/gallery-loading.gif';  // path to image displayed while gallery loads
+    var nextPhoto      = 'images/next.png';             // navigator next photo arrow
+    var prevPhoto      = 'images/prev.png';             // navigator previous photo arrow
 
     //---- END SETTINGS ----
 
@@ -50,7 +52,7 @@ var photopile = (function() {
         });
         photo.init();
 
-        // Once gallery has loaded completely
+        // once gallery has loaded completely
         $(window).load(function() {
             $('.js div.photopile-wrapper').css({  // style container
                 'padding' : thumbOverlap + 'px',
@@ -338,10 +340,11 @@ var photopile = (function() {
     } // photo
 
     // #########################################################################################
-    // TODO
-    // -----
-    // Working here
-    // Going to add left right arrows to the photo container for navigation
+    // NAVIGATOR UNDER DEVELOPMENT
+    // Currently working on next/prev functionality. In particular next/prev divs in the 
+    // container. THIS IS NOT COMPLETE...
+    // Arrows currently appear on hover, this probably won't work for touch screens. Might 
+    // minimize the arrow size and maintain visibility.
     // #########################################################################################
 
     var navigator = {
@@ -352,18 +355,81 @@ var photopile = (function() {
 
         // Initializes the navigator.
         init : function() {
+            this.addElements();
+            this.bindUIActions();
+        },
 
-            // Add 'first/last' class to respective element in the gallery
+        // Adds required navigator elements, classes, and styles.
+        addElements : function() {
+
+            // add 'first/last' class to respective thumbnail element in the gallery
             $('ul.photopile li:first').addClass('first');
             $('ul.photopile li:last').addClass('last');
 
-            // Bind events to LR arrow clicks
+            // add navigator elements to the photo container
+            photo.container.append( this.next );
+            photo.container.append( this.prev );
+
+            // apply css styles ########## (probably going to move this to photopile.css) ###########
+            this.next.css({
+                'position' : 'absolute',
+                'top' : '0',
+                'right' : '0',
+                'width' : '25%',
+                'height' : '100%'
+            });
+            this.prev.css({
+                'position' : 'absolute',
+                'top' : '0',
+                'left' : '0',
+                'width' : '15%',
+                'height' : '100%'
+            });
+
+        }, // addElements
+
+        // Binds UI actions to navigator elements.
+        bindUIActions : function() {
+
+            this.next.click( function(e) {
+                e.preventDefault();
+                navigator.pickupNext();
+            });
+
+            this.prev.click( function(e) {
+                e.preventDefault();
+                navigator.pickupPrev();
+            });
+
+            this.next.mouseover( function() { 
+                $(this).css({
+                    // ########## some of this can be moved to photopile.css ##########
+                    'background-image'    : 'url(' + nextPhoto + ')',
+                    'background-repeat'   : 'no-repeat',
+                    'background-position' : '100%, 50%',
+                    //'background-size' : '200px 200px'
+                });
+            });
+            this.next.mouseout( function() { 
+                $(this).css({ 'background-image' : 'none' });
+            });
+            this.prev.mouseover( function() { 
+                $(this).css({
+                    'background-image'    : 'url(' + prevPhoto + ')',
+                    'background-repeat'   : 'no-repeat',
+                    'background-position' : '0, 50%'
+                });
+            });
+            this.prev.mouseout( function() { 
+                $(this).css({ 'background-image' : 'none'  });
+            });
+
+            // bind prev & next to LR arrow respectively
             $(document.documentElement).keyup(function (e) {
                 if (e.keyCode == 39) { navigator.pickupNext(); } // right arrow clicks
                 if (e.keyCode == 37) { navigator.pickupPrev(); } // left arrow clicks
             });
-
-        }, // init
+        },
 
         // Picks up the next photo in gallery.
         pickupNext : function() {
