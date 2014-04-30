@@ -11,9 +11,7 @@ Improvements
 Photopile is still a pretty basic gallery. Wish list for future improvements includes:
 
 * Improved navigation
- * Clickable next/prev elements within the photo container to navigate to previous/next image in gallery
  * Clearly indicated 'close' button in photo container
 * Display alt tags as photo description when a photo is picked up
-* Draggable thumbnails
 * Improved cross-browser support
 * Improved performance when user quick-clicks multiple thumbnails before they are viewed
