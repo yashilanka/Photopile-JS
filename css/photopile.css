@@ -29,7 +29,18 @@
     min-height : 500px;
 }
 
-/* ----end customizations ----------------------------------------------------*/
+/*-----------------------------------------------------------------------------
+ *  Make sure path to navigation sprite is correct
+ *----------------------------------------------------------------------------*/
+
+div#photopile-nav-next,
+div#photopile-nav-next:hover,
+div#photopile-nav-prev,
+div#photopile-nav-prev:hover {
+    background-image: url('../images/nav-sprites.png');
+}
+
+/*----- end customization -----*/
 
 /* Prevent FOUC */
 .js ul.photopile { 
@@ -84,4 +95,33 @@ div#photopile-active-image-container {
 div#photopile-active-image-container img {
     margin: 0 auto;
     height: auto;
+}
+
+/* Navigator */
+div#photopile-nav-next,
+div#photopile-nav-prev {
+    opacity: 0;
+    position: absolute;
+    top: 50%;
+    width: 30px;
+    height: 40px;
+    margin-top: -20px;
+    cursor: pointer;
+}
+div#photopile-nav-next {
+    right: 0;
+    margin-right: -35px;
+    background-position: -50px 0;
+}
+div#photopile-nav-next:hover {
+    background-position: -50px -50px;
+}
+div#photopile-nav-prev {
+    left: 0;
+    right: 0;
+    margin-left: -35px;
+    background-position: 0 0;
+}
+div#photopile-nav-prev:hover {
+    background-position: 0 -50px;
 }

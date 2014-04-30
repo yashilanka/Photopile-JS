@@ -1,12 +1,11 @@
 //
 // File: photopile.js
 // Auth: Brian W. Howell
-// Date: 25 April 2014
+// Date: 29 April 2014
+//
+// Photopile image gallery
+//
 
-//
-// PHOTOPILE
-// 
-//
 var photopile = (function() {
 
     //---------------------------------------------------------------------------------------------
@@ -14,36 +13,34 @@ var photopile = (function() {
     //---------------------------------------------------------------------------------------------
 
     // Thumbnails
+    var numLayers         = 5;          // number of layers in the pile (max zindex)
     var thumbOverlap      = 50;         // overlap amount (px)
     var thumbRotation     = 45;         // maximum rotation (deg)
     var thumbBorderWidth  = 2;          // border width (px)
     var thumbBorderColor  = 'white';    // border color
     var thumbBorderHover  = '#6DB8FF';  // border hover color
-    var numLayers         = 5;          // number of layers in the pile (max zindex)
+    var draggable         = true;       // enable draggable thumbnails
 
     // Photo container
+    var fadeDuration      = 200;        // speed at which photo fades (ms)
+    var pickupDuration    = 500;        // speed at which photo is picked up & put down (ms)
     var photoZIndex       = 100;        // z-index (show above all)
     var photoBorder       = 10;         // border width around fullsize image
     var photoBorderColor  = 'white';    // border color
-    var fadeDuration      = 200;        // speed at which photo fades (ms)
-    var pickupDuration    = 500;        // speed at which photo is picked up & put down (ms)
 
-    // Background images
-    var thumbLoading   = 'images/thumb-loading.gif';    // path to image displayed while thumbnail loads
-    var galleryLoading = 'images/gallery-loading.gif';  // path to image displayed while gallery loads
-    var nextPhoto      = 'images/next.png';             // navigator next photo arrow
-    var prevPhoto      = 'images/prev.png';             // navigator previous photo arrow
+    // Images
+    var loading    = 'images/loading.gif';  // path to img displayed while gallery/thumbnails loads
 
     //---- END SETTINGS ----
 
     // Initializes Photopile
     function init() {
 
-        // display gallery loading image on container div
+        // display gallery loading image in container div while loading
         $('.js div.photopile-wrapper').css({
             'background-repeat'   : 'no-repeat',
             'background-position' : '50%, 50%',
-            'background-image'    : 'url(' + galleryLoading + ')'
+            'background-image'    : 'url(' + loading + ')'
         });
 
         // initialize thumbnails and photo container
@@ -68,7 +65,7 @@ var photopile = (function() {
 
     //-----------------------------------------------------
     // THUMBNAIL
-    // List-item containing a link to a a fullsize image
+    // List-item containing a link to a fullsize image
     //-----------------------------------------------------
 
     var thumb = {
@@ -81,7 +78,12 @@ var photopile = (function() {
             this.bindUIActions(thumb);
             this.setRotation(thumb);
             this.setOverlap(thumb);
-            this.setZ(thumb);
+            this.setRandomZ(thumb);
+            if (draggable) {
+                thumb.draggable({
+                    start: function(event, ui) { thumb.addClass('preventClick'); }
+                });  
+            }
             thumb.css('background', thumbBorderColor );
         },
 
@@ -105,26 +107,26 @@ var photopile = (function() {
                 });
             });
 
-            // On click | Open image in the photo container.
+            // Pickup the thumbnail on click (if not being dragged).
             thumb.click( function(e) {
                 e.preventDefault();
-                if ($(this).hasClass(self.active)) return;
-                photo.pickup( $(this) );
+                if ($(this).hasClass('preventClick')) {
+                    $(this).removeClass('preventClick');
+                } else {
+                    if ($(this).hasClass(self.active)) return;
+                    photo.pickup( $(this) );
+                }
             });
+
+            // Prevent user from having to double click thumbnail after dragging.
+            thumb.mousedown( function(e) { $(this).removeClass('preventClick'); });
 
         }, // bindUIActions
 
-        // Sets thumbnail overlap amount.
-        setOverlap : function( thumb ) {
-            thumb.css( 'margin', ((thumbOverlap * -1) / 2) + 'px' );
-        },
-
-        // Sets thumbnail z-index to random layer.
-        setZ : function( thumb ) {
-            thumb.css({ 'z-index' : Math.floor((Math.random() * numLayers) + 1) });
-        },
-
-        // Sets thumbnail rotation randomly.
+        // Sets thumbnail properties.
+        setOverlap  : function( thumb ) { thumb.css( 'margin', ((thumbOverlap * -1) / 2) + 'px' ); },
+        setZ        : function( thumb, layer ) { thumb.css( 'z-index', layer ); },
+        setRandomZ  : function( thumb ) { thumb.css({ 'z-index' : Math.floor((Math.random() * numLayers) + 1) }); },
         setRotation : function( thumb ) {
             var min = -1 * thumbRotation;
             var max = thumbRotation;
@@ -134,15 +136,15 @@ var photopile = (function() {
 
         // ----- Active thumbnail -----
 
+        // Sets the active thumbnail.
+        setActive : function( thumb ) { thumb.addClass(this.active); },
+
         // Gets the active thumbnail if set, or returns false.
         getActive : function() { 
             return ($('li.' + this.active)[0]) ? $('li.' + this.active).first() : false;
         },
 
-        // Sets the active thumbnail.
-        setActive : function( thumb ) { thumb.addClass(this.active); },
-
-        // Return active thumbnail properties
+        // Get active thumbnail properties
         getActiveOffset   : function() { return $('li.' + this.active).offset(); },
         getActiveHeight   : function() { return $('li.' + this.active).height(); },
         getActiveWidth    : function() { return $('li.' + this.active).width(); },
@@ -171,6 +173,8 @@ var photopile = (function() {
     // PHOTO CONTAINER
     // Dynamic container div wrapping an img element that displays the 
     // fullsize image associated with the active thumbnail
+    //
+    // @TODO: Add info button that will display the alt tag to user
     //--------------------------------------------------------------------
 
     var photo = {
@@ -182,7 +186,7 @@ var photopile = (function() {
         isPickedUp     : false,  // track if photo container is currently viewable
         fullSizeWidth  : null,   // will hold width of active thumbnail's fullsize image
         fullSizeHeight : null,   // will hold height of active thumbnail's fullsize image
-        windowPadding  : 20,     // minimum space between container and edge of window (px)
+        windowPadding  : 40,     // minimum space between container and edge of window (px)
         
         // Initializes the photo container.
         // Adds elements to DOM and saves container selectors.
@@ -195,7 +199,7 @@ var photopile = (function() {
                 'padding'    : thumbBorderWidth,
                 'z-index'    : photoZIndex,
                 'background' : photoBorderColor,
-                'background-image'    : 'url(' + thumbLoading + ')',
+                'background-image'    : 'url(' + loading + ')',
                 'background-repeat'   : 'no-repeat',
                 'background-position' : '50%, 50%'
             });
@@ -229,6 +233,8 @@ var photopile = (function() {
         putDown : function( callback ) {
             self = this;
             $('body').unbind();
+            navigator.hideControls();
+            thumb.setZ( thumb.getActive(), numLayers );
             self.container.stop().animate({
                 'top'     : thumb.getActiveOffset().top + thumb.getActiveShift(),
                 'left'    : thumb.getActiveOffset().left + thumb.getActiveShift(),
@@ -259,7 +265,7 @@ var photopile = (function() {
             };
         },
 
-        // Positions the container over the active thumb and brings it into view.
+        // Positions the div container over the active thumb and brings it into view.
         startPosition : function() {
             this.container.css({
                 'top'       : thumb.getActiveOffset().top + thumb.getActiveShift(),
@@ -293,7 +299,7 @@ var photopile = (function() {
             }
         }, // enlarge
 
-        // Fullsize image will fit in window.
+        // Fullsize image will fit in window. Display it and show nav controls.
         enlargeToFullSize : function() {
             this.container.css('transform', 'rotate(0deg)').animate({
                 'top'     : ($(window).scrollTop()) + ($(window).height() / 2) - (this.fullSizeHeight / 2),
@@ -301,10 +307,12 @@ var photopile = (function() {
                 'width'   : (this.fullSizeWidth - (2 * photoBorder)) + 'px',
                 'height'  : (this.fullSizeHeight - (2 * photoBorder)) + 'px',
                 'padding' : photoBorder + 'px',
+            }, function() {
+                navigator.showControls();
             });
         },
 
-        // Fullsize image width exceeds window width.
+        // Fullsize image width exceeds window width. Display it and show nav controls.
         enlargeToWindowWidth : function( availableWidth ) {
             var adjustedHeight = availableWidth * (this.fullSizeHeight / this.fullSizeWidth);
             this.container.css('transform', 'rotate(0deg)').animate({
@@ -313,10 +321,12 @@ var photopile = (function() {
                 'width'   : availableWidth + 'px',
                 'height'  : adjustedHeight + 'px',
                 'padding' : photoBorder + 'px'
+            }, function() {
+                navigator.showControls();
             });
         },
 
-        // Fullsize image height exceeds window height.
+        // Fullsize image height exceeds window height. Display it and show nav controls.
         enlargeToWindowHeight : function( availableHeight ) {
             var adjustedWidth = availableHeight * (this.fullSizeWidth / this.fullSizeHeight);
             this.container.css('transform', 'rotate(0deg)').animate({
@@ -325,6 +335,8 @@ var photopile = (function() {
                 'width'   : adjustedWidth + 'px',
                 'height'  : availableHeight + 'px',
                 'padding' : photoBorder + 'px'
+            }, function() {
+                navigator.showControls();
             });
         },
 
@@ -339,89 +351,37 @@ var photopile = (function() {
 
     } // photo
 
-    // #########################################################################################
-    // NAVIGATOR UNDER DEVELOPMENT
-    // Currently working on next/prev functionality. In particular next/prev divs in the 
-    // container. THIS IS NOT COMPLETE...
-    // Arrows currently appear on hover, this probably won't work for touch screens. Might 
-    // minimize the arrow size and maintain visibility.
-    // #########################################################################################
+    //----------------------------------------------------------------------
+    // NAVIGATOR
+    // Collection of div elements used to navigate the photos in gallery
+    //
+    // @TODO: Add close (putdown) photo button
+    //----------------------------------------------------------------------
 
     var navigator = {
 
-        // Navigator elements
-        next : $( '<div id="photopile-nav-next" />' ), 
+        // Navigator controls.
+        next : $( '<div id="photopile-nav-next" />' ),
         prev : $( '<div id="photopile-nav-prev" />' ),
 
-        // Initializes the navigator.
         init : function() {
-            this.addElements();
+            photo.container.append( this.next );           // add next control button
+            photo.container.append( this.prev );           // add prev control button
+            $('ul.photopile li:first').addClass('first');  // add 'first' class to first thumb
+            $('ul.photopile li:last').addClass('last');    // add 'last' class to last thumb
             this.bindUIActions();
         },
 
-        // Adds required navigator elements, classes, and styles.
-        addElements : function() {
-
-            // add 'first/last' class to respective thumbnail element in the gallery
-            $('ul.photopile li:first').addClass('first');
-            $('ul.photopile li:last').addClass('last');
-
-            // add navigator elements to the photo container
-            photo.container.append( this.next );
-            photo.container.append( this.prev );
-
-            // apply css styles ########## (probably going to move this to photopile.css) ###########
-            this.next.css({
-                'position' : 'absolute',
-                'top' : '0',
-                'right' : '0',
-                'width' : '25%',
-                'height' : '100%'
-            });
-            this.prev.css({
-                'position' : 'absolute',
-                'top' : '0',
-                'left' : '0',
-                'width' : '15%',
-                'height' : '100%'
-            });
-
-        }, // addElements
-
-        // Binds UI actions to navigator elements.
         bindUIActions : function() {
 
+            // Bind next/prev event to the left and right arrow controls
             this.next.click( function(e) {
                 e.preventDefault();
                 navigator.pickupNext();
             });
-
             this.prev.click( function(e) {
                 e.preventDefault();
                 navigator.pickupPrev();
-            });
-
-            this.next.mouseover( function() { 
-                $(this).css({
-                    // ########## some of this can be moved to photopile.css ##########
-                    'background-image'    : 'url(' + nextPhoto + ')',
-                    'background-repeat'   : 'no-repeat',
-                    'background-position' : '100%, 50%',
-                    //'background-size' : '200px 200px'
-                });
-            });
-            this.next.mouseout( function() { 
-                $(this).css({ 'background-image' : 'none' });
-            });
-            this.prev.mouseover( function() { 
-                $(this).css({
-                    'background-image'    : 'url(' + prevPhoto + ')',
-                    'background-repeat'   : 'no-repeat',
-                    'background-position' : '0, 50%'
-                });
-            });
-            this.prev.mouseout( function() { 
-                $(this).css({ 'background-image' : 'none'  });
             });
 
             // bind prev & next to LR arrow respectively
@@ -429,9 +389,9 @@ var photopile = (function() {
                 if (e.keyCode == 39) { navigator.pickupNext(); } // right arrow clicks
                 if (e.keyCode == 37) { navigator.pickupPrev(); } // left arrow clicks
             });
-        },
 
-        // Picks up the next photo in gallery.
+        }, // bindUIActions
+
         pickupNext : function() {
             var activeThumb = thumb.getActive();
             if ( !activeThumb ) return;
@@ -442,7 +402,6 @@ var photopile = (function() {
             }
         },
 
-        // Picks up the previous photo in gallery.
         pickupPrev : function() {
             var activeThumb = thumb.getActive();
             if ( !activeThumb ) return;
@@ -451,12 +410,21 @@ var photopile = (function() {
             } else {
                 photo.pickup( activeThumb.prev('li') ); // pickup prev
             }
+        },
+
+        hideControls : function() {
+            this.next.css('opacity', '0');
+            this.prev.css('opacity', '0');
+        },
+
+        showControls : function() {
+            this.next.css('opacity', '100');
+            this.prev.css('opacity', '100');
         }
 
     }; // navigator
 
-    // Return 1 method Photopile API
-    return { scatter : init }
+    return { scatter : init }  // Photopile's 1 method API
 
 })(); // photopile
 
