@@ -96,6 +96,17 @@ div#photopile-active-image-container img {
     margin: 0 auto;
     height: auto;
 }
+div#photopile-active-image-info {
+    position: relative;
+    width: 100%;
+    background: rgba(0,0,0,0.3);
+}
+div#photopile-active-image-info p {
+    color: white;
+    font-size: 12px;
+    padding: 3px 8px;
+}
+
 
 /* Navigator */
 div#photopile-nav-next,

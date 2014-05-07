@@ -27,6 +27,7 @@ var photopile = (function() {
     var photoZIndex       = 100;        // z-index (show above all)
     var photoBorder       = 10;         // border width around fullsize image
     var photoBorderColor  = 'white';    // border color
+    var showInfo          = true;       // include photo description (alt tag) in photo container
 
     // Images
     var loading    = 'images/loading.gif';  // path to img displayed while gallery/thumbnails loads
@@ -182,6 +183,7 @@ var photopile = (function() {
         // Photo container elements
         container : $( '<div id="photopile-active-image-container"/>' ), 
         image     : $( '<img id="photopile-active-image" />'),
+        info      : $( '<div id="photopile-active-image-info"/>'),
 
         isPickedUp     : false,  // track if photo container is currently viewable
         fullSizeWidth  : null,   // will hold width of active thumbnail's fullsize image
@@ -192,6 +194,7 @@ var photopile = (function() {
         // Adds elements to DOM and saves container selectors.
         init : function() {
 
+            // append and style photo container
             $('body').append( this.container );
             this.container.css({
                 'display'    : 'none',
@@ -204,11 +207,17 @@ var photopile = (function() {
                 'background-position' : '50%, 50%'
             });
 
+            // append and style image
             this.container.append( this.image );
             this.image.css('display', 'block');
-            this.container = $('div#photopile-active-image-container');
-            this.image = this.container.children();
-        
+
+            // append and style info div
+            if ( showInfo ) {
+                this.container.append( this.info );
+                this.info.append('<p></p>');
+                this.info.css('opacity', '0');
+            };
+   
         }, // init
 
         // Simulates picking up a photo from the photopile.
@@ -233,6 +242,7 @@ var photopile = (function() {
         putDown : function( callback ) {
             self = this;
             $('body').unbind();
+            self.hideInfo();
             navigator.hideControls();
             thumb.setZ( thumb.getActive(), numLayers );
             self.container.stop().animate({
@@ -299,43 +309,66 @@ var photopile = (function() {
             }
         }, // enlarge
 
+        // Updates the info div text and makes visible within the photo container.
+        showInfo : function() {
+            if ( showInfo ) {
+                this.info.children().text( thumb.getActive().children('a').children('img').attr('alt') );
+                this.info.css({
+                    'margin-top' : -(this.info.height()) + 'px'
+                }).fadeTo(fadeDuration, 1);
+            }
+        },
+
+        // Hides the info div.
+        hideInfo : function() {
+            if ( showInfo ) {
+                this.info.fadeTo(fadeDuration, 0);
+            };
+        },
+
         // Fullsize image will fit in window. Display it and show nav controls.
         enlargeToFullSize : function() {
-            this.container.css('transform', 'rotate(0deg)').animate({
-                'top'     : ($(window).scrollTop()) + ($(window).height() / 2) - (this.fullSizeHeight / 2),
-                'left'    : ($(window).scrollLeft()) + ($(window).width() / 2) - (this.fullSizeWidth / 2),
-                'width'   : (this.fullSizeWidth - (2 * photoBorder)) + 'px',
-                'height'  : (this.fullSizeHeight - (2 * photoBorder)) + 'px',
+            self = this;
+            self.container.css('transform', 'rotate(0deg)').animate({
+                'top'     : ($(window).scrollTop()) + ($(window).height() / 2) - (self.fullSizeHeight / 2),
+                'left'    : ($(window).scrollLeft()) + ($(window).width() / 2) - (self.fullSizeWidth / 2),
+                'width'   : (self.fullSizeWidth - (2 * photoBorder)) + 'px',
+                'height'  : (self.fullSizeHeight - (2 * photoBorder)) + 'px',
                 'padding' : photoBorder + 'px',
             }, function() {
+                self.showInfo();
                 navigator.showControls();
             });
         },
 
         // Fullsize image width exceeds window width. Display it and show nav controls.
         enlargeToWindowWidth : function( availableWidth ) {
-            var adjustedHeight = availableWidth * (this.fullSizeHeight / this.fullSizeWidth);
-            this.container.css('transform', 'rotate(0deg)').animate({
+            self = this;
+            var adjustedHeight = availableWidth * (self.fullSizeHeight / self.fullSizeWidth);
+            self.container.css('transform', 'rotate(0deg)').animate({
                 'top'     : $(window).scrollTop()  + ($(window).height() / 2) - (adjustedHeight / 2),
                 'left'    : $(window).scrollLeft() + ($(window).width() / 2)  - (availableWidth / 2),
                 'width'   : availableWidth + 'px',
                 'height'  : adjustedHeight + 'px',
                 'padding' : photoBorder + 'px'
             }, function() {
+                self.showInfo();
                 navigator.showControls();
             });
         },
 
         // Fullsize image height exceeds window height. Display it and show nav controls.
         enlargeToWindowHeight : function( availableHeight ) {
-            var adjustedWidth = availableHeight * (this.fullSizeWidth / this.fullSizeHeight);
-            this.container.css('transform', 'rotate(0deg)').animate({
+            self = this;
+            var adjustedWidth = availableHeight * (self.fullSizeWidth / self.fullSizeHeight);
+            self.container.css('transform', 'rotate(0deg)').animate({
                 'top'     : $(window).scrollTop()  + ($(window).height() / 2) - (availableHeight / 2),
                 'left'    : $(window).scrollLeft() + ($(window).width() / 2)  - (adjustedWidth / 2),
                 'width'   : adjustedWidth + 'px',
                 'height'  : availableHeight + 'px',
                 'padding' : photoBorder + 'px'
             }, function() {
+                self.showInfo();
                 navigator.showControls();
             });
         },
