@@ -217,8 +217,7 @@ var photopile = (function() {
 
         // Preloads the fullsize image associated with a thumbnail.
         preload : function( thumbnail ) {
-            var fullsize = new Image;
-            fullsize.src = thumbnail.children().children().attr('src');
+            $("<img />").attr("src", thumbnail.children().children().attr('src'));
         },
 
         // Simulates picking up a photo from the photopile.
@@ -265,7 +264,7 @@ var photopile = (function() {
             var self = this;
             self.image.css('opacity', '0');         // Image is not visible until
             self.startPosition();                   // the container is positioned,
-            var img = new Image;                    // the source is updated,
+            var img = new Image();                  // the source is updated,
             img.src = src;                          // and the image is loaded.
             img.onload = function() {               // Restore visibility in callback
                 self.fullSizeWidth = this.width;
