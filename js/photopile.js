@@ -217,7 +217,7 @@ var photopile = (function() {
 
         // Preloads the fullsize image associated with a thumbnail.
         preload : function( thumbnail ) {
-            var fullsize = new Image();
+            var fullsize = new Image;
             fullsize.src = thumbnail.children().children().attr('src');
         },
 
