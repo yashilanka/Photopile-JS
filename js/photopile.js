@@ -20,7 +20,6 @@ var photopile = (function() {
     var thumbBorderColor  = 'white';    // border color
     var thumbBorderHover  = '#6DB8FF';  // border hover color
     var draggable         = true;       // enable draggable thumbnails
-    var preload           = true;       // preload fullsize images
 
     // Photo container
     var fadeDuration      = 200;        // speed at which photo fades (ms)
@@ -47,9 +46,6 @@ var photopile = (function() {
         // initialize thumbnails and photo container
         $('ul.photopile').children().each( function() { 
             thumb.init($(this));
-            if (preload) {
-                photo.preload($(this));
-            }
         });
         photo.init();
 
@@ -215,11 +211,6 @@ var photopile = (function() {
         
         }, // init
 
-        // Preloads the fullsize image associated with a thumbnail.
-        preload : function( thumbnail ) {
-            $("<img />").attr("src", thumbnail.children().children().attr('src'));
-        },
-
         // Simulates picking up a photo from the photopile.
         pickup : function( thumbnail ) {
             var self = this;
@@ -264,7 +255,7 @@ var photopile = (function() {
             var self = this;
             self.image.css('opacity', '0');         // Image is not visible until
             self.startPosition();                   // the container is positioned,
-            var img = new Image();                  // the source is updated,
+            var img = new Image;                    // the source is updated,
             img.src = src;                          // and the image is loaded.
             img.onload = function() {               // Restore visibility in callback
                 self.fullSizeWidth = this.width;
