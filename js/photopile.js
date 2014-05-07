@@ -20,6 +20,7 @@ var photopile = (function() {
     var thumbBorderColor  = 'white';    // border color
     var thumbBorderHover  = '#6DB8FF';  // border hover color
     var draggable         = true;       // enable draggable thumbnails
+    var preload           = true;       // preload fullsize images
 
     // Photo container
     var fadeDuration      = 200;        // speed at which photo fades (ms)
@@ -46,6 +47,9 @@ var photopile = (function() {
         // initialize thumbnails and photo container
         $('ul.photopile').children().each( function() { 
             thumb.init($(this));
+            if (preload) {
+                photo.preload($(this));
+            }
         });
         photo.init();
 
@@ -210,6 +214,12 @@ var photopile = (function() {
             this.image = this.container.children();
         
         }, // init
+
+        // Preloads the fullsize image associated with a thumbnail.
+        preload : function( thumbnail ) {
+            var fullsize = new Image();
+            fullsize.src = thumbnail.children().children().attr('src');
+        },
 
         // Simulates picking up a photo from the photopile.
         pickup : function( thumbnail ) {
